@@ -25,7 +25,9 @@
         modules = [./home.nix] ++ extraModules;
       };
   in {
-    homeConfigurations."turntide" = mkHome "x86_64-darwin" [];
+    homeConfigurations."turntide@newpkins" = mkHome "x86_64-darwin" [
+      {home.username = "turntide";}
+    ];
 
     formatter.x86_64-darwin = nixpkgs.legacyPackages.x86_64-darwin.alejandra;
   };

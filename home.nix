@@ -1,12 +1,18 @@
 {
   config,
   pkgs,
+  lib,
   ...
-}: {
+}: let
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+in {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = "turntide";
-  home.homeDirectory = "/Users/turntide";
+  home.username = lib.mkDefault "nyobe";
+  home.homeDirectory =
+    if isDarwin
+    then "/Users/${config.home.username}"
+    else "/home/${config.home.username}";
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
