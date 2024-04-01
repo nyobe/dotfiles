@@ -6,6 +6,10 @@
 }: let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in {
+  imports = [
+    ./shell.nix
+  ];
+
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = lib.mkDefault "nyobe";
