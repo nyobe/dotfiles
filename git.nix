@@ -92,4 +92,14 @@
     gwD = "git diff --word-diff";
     gwx = "";
   };
+
+  # git-get
+  home.packages = [
+    pkgs.git-get
+  ];
+  programs.git.extraConfig.gitget = {
+    root = "~/src"; # vs default "repos"... should I just keep "src" for my own work?
+    skip-host = true;
+    scheme = "https";
+  };
 }
