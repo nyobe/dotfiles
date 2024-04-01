@@ -25,6 +25,9 @@
         modules = [./home.nix] ++ extraModules;
       };
   in {
+    lib = {inherit mkHome;};
+    templates = import ./templates;
+
     homeConfigurations."turntide@newpkins" = mkHome "x86_64-darwin" [
       {home.username = "turntide";}
     ];
