@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }: let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
@@ -10,6 +11,9 @@ in {
     ./shell.nix
     ./git.nix
   ];
+
+  # pin the nixpkgs registry to the flake input to avoid re-downloading it every time a `nix shell` command is run X_X
+  nix.registry.nixpkgs.flake = inputs.nixpkgs;
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
