@@ -10,25 +10,23 @@
     };
   };
 
-  outputs = {
+  outputs = inputs @ {
+    self,
     nixpkgs,
     home-manager,
     ...
   }: let
-    system = "x86_64-darwin";
-    pkgs = nixpkgs.legacyPackages.${system};
+    mkHome = system: extraModules:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${system};
+        # pass flake inputs as extra argument to home modules
+        extraSpecialArgs = {inherit inputs;};
+        # always include the base home module
+        modules = [./home.nix] ++ extraModules;
+      };
   in {
-    homeConfigurations."turntide" = home-manager.lib.homeManagerConfiguration {
-      inherit pkgs;
+    homeConfigurations."turntide" = mkHome "x86_64-darwin" [];
 
-      # Specify your home configuration modules here, for example,
-      # the path to your home.nix.
-      modules = [./home.nix];
-
-      # Optionally use extraSpecialArgs
-      # to pass through arguments to home.nix
-    };
-
-    formatter.${system} = pkgs.alejandra;
+    formatter.x86_64-darwin = nixpkgs.legacyPackages.x86_64-darwin.alejandra;
   };
 }
