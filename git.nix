@@ -35,8 +35,8 @@
     gco = "git checkout";
     gcom = "git checkout main";
     gcp = "git cherry-pick --ff";
-    gcx = "git revert";
-    gcX = "git reset --hard HEAD^";
+    gcx = "git reset --soft HEAD^";
+    gcX = "git revert";
     gcs = "git show";
     gcw = "git commit -m 'WIP'";
 
