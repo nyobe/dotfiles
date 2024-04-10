@@ -19,7 +19,13 @@
   };
 
   # make the zsh login shell immediately invoke fish - easier than dealing with /etc/shells
-  home.file.".zlogin".text = "exec fish\n";
+  home.file.".zlogin".text = ''
+    # immediately invoke fish, unless shell was invoked with the -c option.
+    # (prevents breaking intellij / vscode environment detection, see https://superuser.com/a/1806104)
+      if [[ -z "$ZSH_EXECUTION_STRING" ]]; then
+        exec fish
+      fi
+  '';
 
   programs.starship = {
     enable = true;
