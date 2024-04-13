@@ -31,7 +31,7 @@
     # Commit (c)
     gc = "git commit --verbose";
     gcf = "git commit --amend --reuse-message HEAD";
-    gcF = "git commit --amend HEAD";
+    gcF = "git commit --amend";
     gco = "git checkout";
     gcom = "git checkout main";
     gcp = "git cherry-pick --ff";
