@@ -15,6 +15,7 @@
     enable = true;
     functions = {
       fish_greeting = "";
+      mkcd = "mkdir -p $argv; and cd $argv";
     };
   };
 
