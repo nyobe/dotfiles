@@ -10,6 +10,7 @@ in {
   imports = [
     ./shell.nix
     ./git.nix
+    ./docker.nix
   ];
 
   # pin the nixpkgs registry to the flake input to avoid re-downloading it every time a `nix shell` command is run X_X
