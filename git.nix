@@ -8,6 +8,9 @@
     enable = true;
     userName = lib.mkDefault "Claire Gaestel";
     userEmail = lib.mkDefault "213631+nyobe@users.noreply.github.com";
+    extraConfig = {
+      init.defaultBranch = "main";
+    };
     ignores = [
       ".DS_Store"
     ];
