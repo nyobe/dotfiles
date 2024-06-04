@@ -11,6 +11,9 @@
     ignores = [
       ".DS_Store"
     ];
+    aliases = {
+      root = "rev-parse --show-toplevel";
+    };
   };
 
   # vs home.shellAliases?
