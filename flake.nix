@@ -33,6 +33,11 @@
     templates = import ./templates;
 
     formatter = forEachSystem (pkgs: pkgs.alejandra);
+    packages = forEachSystem (pkgs: {
+      default = pkgs.writeShellScriptBin "activate" ''
+        ${pkgs.nh}/bin/nh home switch -c $USER@$(hostname -s) ~/.config/home-manager/ --ask "$@"
+      '';
+    });
 
     homeConfigurations."turntide@newpkins" = mkHome "x86_64-darwin" [
       {home.username = "turntide";}
