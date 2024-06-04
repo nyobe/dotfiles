@@ -16,6 +16,7 @@
     functions = {
       fish_greeting = "";
       mkcd = "mkdir -p $argv; and cd $argv";
+      scratch = "mkcd ~/scratch/(date +%F)/(echo $argv)";
     };
   };
 
