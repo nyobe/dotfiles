@@ -100,4 +100,6 @@ in {
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
+  # relocate gopath for `go install`ed bins (eg, vscode installs gopls)
+  home.sessionVariables.GOPATH = "~/.cache/go";
 }
