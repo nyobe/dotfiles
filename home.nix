@@ -9,6 +9,7 @@
 in {
   imports = [
     ./shell.nix
+    ./editor.nix
     ./git.nix
     ./docker.nix
   ];
@@ -94,11 +95,9 @@ in {
   #  /etc/profiles/per-user/turntide/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # EDITOR = "emacs";
   };
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
-  programs.kakoune.enable = true;
 }
