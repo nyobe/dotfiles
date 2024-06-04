@@ -16,6 +16,10 @@
     home-manager,
     ...
   }: let
+    forEachSystem = f:
+      nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (
+        system: f nixpkgs.legacyPackages.${system}
+      );
     mkHome = system: extraModules:
       home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
@@ -28,13 +32,12 @@
     lib = {inherit mkHome;};
     templates = import ./templates;
 
+    formatter = forEachSystem (pkgs: pkgs.alejandra);
+
     homeConfigurations."turntide@newpkins" = mkHome "x86_64-darwin" [
       {home.username = "turntide";}
     ];
 
     homeConfigurations."nyobe@m1ttens" = mkHome "aarch64-darwin" [];
-
-    formatter.x86_64-darwin = nixpkgs.legacyPackages.x86_64-darwin.alejandra;
-    formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.alejandra;
   };
 }
