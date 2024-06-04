@@ -30,7 +30,7 @@
 
     # Commit (c)
     gc = "git commit --verbose";
-    gcf = "git commit --amend --reuse-message HEAD";
+    gcf = "git commit --amend --no-edit";
     gcF = "git commit --amend";
     gco = "git checkout";
     gcom = "git checkout main";
