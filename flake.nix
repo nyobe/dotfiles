@@ -44,5 +44,21 @@
     ];
 
     homeConfigurations."nyobe@m1ttens" = mkHome "aarch64-darwin" [];
+
+    homeConfigurations."claire@waddlesworth" = mkHome "aarch64-darwin" [
+      {home.username = "claire";}
+      {home.sessionVariables.GOPRIVATE = "github.com/pulumi";}
+      ({pkgs, ...}: {
+        home.packages = [
+          pkgs.devbox
+        ];
+        programs.mise.enable = true;
+      })
+      {
+        programs.git.extraConfig = {
+          url."git@github.com:".insteadOf = "https://github.com/";
+        };
+      }
+    ];
   };
 }

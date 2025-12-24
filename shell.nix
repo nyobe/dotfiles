@@ -9,14 +9,17 @@
   programs.direnv = {
     enable = true;
     nix-direnv.enable = true;
+    config = {
+      global.hide_env_diff = true;
+    };
   };
 
   programs.fish = {
     enable = true;
     functions = {
       fish_greeting = "";
-      mkcd = "mkdir -p $argv; and cd $argv";
-      scratch = "mkcd ~/scratch/(date +%F)/(echo $argv)";
+      mkcd = ''mkdir -p $argv; and cd $argv'';
+      scratch = ''mkcd ~/scratch/"$(date +%F)_$(echo $argv)"'';
     };
   };
 
@@ -38,20 +41,26 @@
         "$username"
         "$hostname"
         "$directory"
+        "$pulumi"
+        "$kubernetes"
         "$git_branch"
         "$git_state"
-        "$git_status"
+        #"$git_status"
         "$cmd_duration"
+        #"$fill"
         "$line_break"
+        #"$nix_shell"
         "$python"
+        #"$direnv"
         "$character"
       ];
 
       directory.style = "blue";
+      # directory.fish_style_pwd_dir_length = 1;
 
       character = {
-        success_symbol = "[❯](purple)";
-        error_symbol = "[❯](red)";
+        success_symbol = "[❯](black)";
+        error_symbol = "[x](red)";
         vimcmd_symbol = "[❮](green)";
       };
 
@@ -85,6 +94,20 @@
       python = {
         format = "[$virtualenv]($style) ";
         style = "bright-black";
+      };
+
+      kubernetes = {
+        disabled = false;
+        detect_env_vars = ["KUBECONFIG"];
+        format = "[$context(/\($namespace\))]($style) ";
+      };
+
+      fill = {
+        symbol = " ";
+      };
+
+      pulumi = {
+        format = "[\($username@\)$stack]($style) ";
       };
     };
   };

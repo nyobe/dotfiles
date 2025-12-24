@@ -11,11 +11,20 @@ in {
     ./shell.nix
     ./editor.nix
     ./git.nix
+    ./jj.nix
     ./docker.nix
+    ./k8s.nix
   ];
 
   # pin the nixpkgs registry to the flake input to avoid re-downloading it every time a `nix shell` command is run X_X
   nix.registry.nixpkgs.flake = inputs.nixpkgs;
+  # add back a nixpkgs-unstable registry entry
+  nix.registry.nixpkgs-unstable.to = {
+    type = "github";
+    owner = "NixOS";
+    repo = "nixpkgs";
+    ref = "nixpkgs-unstable";
+  };
 
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -59,6 +68,8 @@ in {
       pkgs.ripgrep
       pkgs.ranger
       pkgs.jq
+      pkgs.tree
+      pkgs.nh
     ]
     ++ lib.optionals isDarwin [
       pkgs.darwin.trash
@@ -101,5 +112,5 @@ in {
   programs.home-manager.enable = true;
 
   # relocate gopath for `go install`ed bins (eg, vscode installs gopls)
-  home.sessionVariables.GOPATH = "~/.cache/go";
+  #home.sessionVariables.GOPATH = "~/.cache/go";
 }
