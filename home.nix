@@ -14,6 +14,7 @@ in {
     ./jj.nix
     ./docker.nix
     ./k8s.nix
+    ./cloud.nix
   ];
 
   # pin the nixpkgs registry to the flake input to avoid re-downloading it every time a `nix shell` command is run X_X
@@ -70,6 +71,8 @@ in {
       pkgs.jq
       pkgs.tree
       pkgs.nh
+      pkgs.wget
+      pkgs.fd
     ]
     ++ lib.optionals isDarwin [
       pkgs.darwin.trash
@@ -78,16 +81,10 @@ in {
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
+    ".local/bin/pws" = {
+      source = ./bin/pws;
+      executable = true;
+    };
   };
 
   # Home Manager can also manage your environment variables through
@@ -113,4 +110,9 @@ in {
 
   # relocate gopath for `go install`ed bins (eg, vscode installs gopls)
   #home.sessionVariables.GOPATH = "~/.cache/go";
+  home.sessionVariables.MANPAGER = "less -RFX"; # open man pages in "persist-on-exit" mode
+
+  home.sessionPath = [
+      "$HOME/.local/bin"
+  ];
 }

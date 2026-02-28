@@ -53,9 +53,11 @@
           pkgs.devbox
         ];
         programs.mise.enable = true;
+        # programs.fish.shellAbbrs.claude = "claude --model claude-opus-4-6";
+        programs.fish.shellAbbrs.claude = "claude --thinking-display summarized";
       })
       {
-        programs.git.extraConfig = {
+        programs.git.settings = {
           url."git@github.com:".insteadOf = "https://github.com/";
         };
       }

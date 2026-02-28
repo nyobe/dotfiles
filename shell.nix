@@ -20,6 +20,9 @@
       fish_greeting = "";
       mkcd = ''mkdir -p $argv; and cd $argv'';
       scratch = ''mkcd ~/scratch/"$(date +%F)_$(echo $argv)"'';
+
+      bak = ''set -l f (path normalize $argv); and mv -i $f $f.bak'';
+      unbak = ''set -l f (path normalize $argv); and test (path extension $f) = "bak"; and mv -i $f (path change-extension "" $f)'';
     };
   };
 
@@ -37,12 +40,18 @@
 
     # adapted from `starship preset pure-preset`
     settings = {
+        # what parts of this are actually useful?
       format = lib.concatStrings [
+          # these will only show up in ssh, right?
         "$username"
         "$hostname"
         "$directory"
+        # my pws utility makes pulumi login/stack selection tied to the cwd, (and the starship plugin is not aware of PULUMI_OPTION_STACK so its misleading).
         "$pulumi"
+        # similar to pulumi, using direnv to tie the selected kubecontext / ns to the cwd is less error prone. maybe the main thing that is useful is an indicator that one is active? k9s doesn't even respect the selected namespace :/
         "$kubernetes"
+        # git state is useless with jj
+        # there is a jj-starship plugin, but is that really that useful either? I tend to orient myself using jj log
         "$git_branch"
         "$git_state"
         #"$git_status"
@@ -50,6 +59,7 @@
         #"$fill"
         "$line_break"
         #"$nix_shell"
+        # toolchains should all be brought in via devshell of some kind: devbox or mise. venv should either be implicit (uv/poetry) or activated via direnv. 
         "$python"
         #"$direnv"
         "$character"

@@ -77,6 +77,10 @@
     };
   };
 
+  # abbr to just R?  keybind instead of abbr?
+  programs.fish.functions._abbr_GR = ''echo (git rev-parse --show-toplevel)/%'';
+  programs.fish.shellAbbrs.GR = { position = "anywhere"; setCursor = "%"; function = "_abbr_GR"; };
+
   # vs home.shellAliases?
   programs.fish.shellAbbrs = {
     # based on https://github.com/sorin-ionescu/prezto/blob/master/modules/git/alias.zsh
@@ -165,7 +169,7 @@
   };
 
   # git-get
-  programs.git.extraConfig.gitget = {
+  programs.git.settings.gitget = {
     root = "~/src"; # vs default "repos"... should I just keep "src" for my own work?
     skip-host = true;
     scheme = "https";

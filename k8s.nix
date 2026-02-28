@@ -1,6 +1,6 @@
 {pkgs, ...}: {
   home.packages = [
-    #pkgs.kubectl
+    pkgs.kubectl
     pkgs.kind
     pkgs.kubectx
   ];

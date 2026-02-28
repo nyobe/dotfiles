@@ -64,6 +64,7 @@
     ".config/ghostty/config".text = ''
       theme = Terminal Basic
       keybind = shift+enter=text:\x1b\r
+      auto-update-channel = tip
     '';
   };
 }

@@ -1,0 +1,194 @@
+#!/usr/bin/env fish
+
+# https://gist.github.com/nyobe/d8565eb3899037bf6c3cc130bd547269
+
+# pws — Pulumi Workspace Selector
+#
+# Composable primitives for managing Pulumi backend + stack selection via direnv.
+#
+# Commands:
+#   pws login <name> [--api <url>] [--org <org>]
+#   pws login <name> --ref <path> [--org <org>]
+#   pws stack <name>
+
+set -g PULUMI_HOME_SOURCE (set -q PULUMI_HOME; and echo $PULUMI_HOME; or echo $HOME/.pulumi)
+
+function pws_usage
+    echo "pws — Pulumi Workspace Selector
+
+Usage:
+  pws login <name> [--api <url>] [--org <org>]
+  pws login <name> --ref <path> [--org <org>]
+  pws stack <name>
+
+Commands:
+  login   Create a login directory with isolated PULUMI_HOME.
+          Defaults to https://api.pulumi.com. Use --api for a
+          different backend, or --ref to share credentials with
+          an existing login directory.
+
+  stack   Create a stack directory that inherits the parent
+          login context via direnv's source_up.
+
+Options for login:
+  --api <url>   Pulumi API URL (default: https://api.pulumi.com)
+  --ref <path>  Share credentials from an existing login directory
+  --org <org>   Set default org for this backend
+
+Examples:
+  pws login ws --org pulumi
+  pws stack dev
+  cd ws/dev && pulumi up
+
+  pws login claire-rs --ref ../infrastructure/reviewStacks/ws/claire/login
+  pws stack test"
+end
+
+function pws_login
+    argparse --min-args 1 --max-args 1 --exclusive 'api,ref' 'api=' 'org=' 'ref=' -- $argv
+    or begin; echo "Usage: pws login <name> [--api <url>] [--ref <path>] [--org <org>]" >&2; return 1; end
+
+    set -l name $argv[1]
+    set -l dir $PWD/$name
+
+    if test -f "$dir/.envrc"
+        echo "Error: $dir/.envrc already exists." >&2
+        return 1
+    end
+
+    # Resolve reference login if provided
+    set -l ref_pulumi ""
+    if set -q _flag_ref
+        if not test -d "$_flag_ref"
+            echo "Error: --ref path does not exist: $_flag_ref" >&2
+            return 1
+        end
+        set ref_pulumi (realpath "$_flag_ref")/.pulumi
+        if not test -f "$ref_pulumi/credentials.json"
+            echo "Error: no credentials found at $_flag_ref/.pulumi/" >&2
+            return 1
+        end
+    end
+
+    # Determine API URL: explicit flag > reference > default
+    set -l api
+    if set -q _flag_api
+        set api $_flag_api
+    else if test -n "$ref_pulumi"
+        set api (jq -r .current "$ref_pulumi/credentials.json")
+    else
+        set api "https://api.pulumi.com"
+    end
+
+    mkdir -p "$dir/.pulumi"
+
+    # Symlink shared resources from the user's main PULUMI_HOME
+    for shared in plugins policies templates templates-policy
+        if test -d "$PULUMI_HOME_SOURCE/$shared"; and not test -e "$dir/.pulumi/$shared"
+            ln -s "$PULUMI_HOME_SOURCE/$shared" "$dir/.pulumi/$shared"
+        end
+    end
+
+    # Link credentials from reference login if provided
+    if test -n "$ref_pulumi"
+        ln -s "$ref_pulumi/credentials.json" "$dir/.pulumi/credentials.json"
+        if test -f "$ref_pulumi/config.json"
+            cp "$ref_pulumi/config.json" "$dir/.pulumi/config.json"
+        end
+    end
+
+    # Build the .envrc
+    set -l envrc "# pws login: $name"
+    if test -n "$ref_pulumi"
+        set envrc "$envrc
+# ref: $_flag_ref"
+    end
+    set envrc "$envrc
+source_up .envrc
+
+# Isolate PULUMI_HOME so credentials are scoped to this directory
+export PULUMI_HOME=\"\$PWD/.pulumi\"
+
+# Clear any inherited backend overrides
+unset PULUMI_ACCESS_TOKEN
+unset PULUMI_BACKEND_URL
+unset PULUMI_CONSOLE_DOMAIN
+
+# Clear any inherited stack selections
+unset PULUMI_OPTION_STACK
+
+export PULUMI_API=\"$api\""
+
+    echo "$envrc" >"$dir/.envrc"
+
+    # Git-ignore the workspace contents
+    echo "*" >"$dir/.gitignore"
+
+    direnv allow "$dir/.envrc"
+
+    # Run pulumi commands with a clean environment matching what the .envrc sets
+    # -u flags unset vars that might leak from the parent env (e.g. PULUMI_BACKEND_URL with trailing slash)
+    set -l pulumi_env env -u PULUMI_BACKEND_URL -u PULUMI_CONSOLE_DOMAIN PULUMI_HOME="$dir/.pulumi" PULUMI_API="$api"
+
+    # Log in if no reference was provided (ref already has credentials)
+    if test -z "$ref_pulumi"
+        $pulumi_env pulumi login
+    end
+
+    # Set default org
+    if set -q _flag_org
+        $pulumi_env pulumi org set-default $_flag_org
+    end
+end
+
+function pws_stack
+    argparse --min-args 1 --max-args 1 -- $argv
+    or begin; echo "Usage: pws stack <name>" >&2; return 1; end
+
+    set -l name $argv[1]
+
+    set -l dir $PWD/$name
+
+    if test -f "$dir/.envrc"
+        echo "Error: $dir/.envrc already exists." >&2
+        return 1
+    end
+
+    mkdir -p "$dir"
+
+    echo "\
+# pws stack: $name
+source_up .envrc
+export PULUMI_OPTION_STACK=\"$name\"" >"$dir/.envrc"
+
+    # Symlink Pulumi.<stack>.yaml from the project root (may be dangling until config is created)
+    set -l search_dir $PWD
+    while test "$search_dir" != /
+        if test -f "$search_dir/Pulumi.yaml"
+            ln -s "$search_dir/Pulumi.$name.yaml" "$dir/Pulumi.$name.yaml"
+            break
+        end
+        set search_dir (dirname "$search_dir")
+    end
+
+    direnv allow "$dir/.envrc"
+end
+
+# Main dispatch
+switch (count $argv)
+    case 0
+        pws_usage >&2
+        exit 1
+end
+
+switch $argv[1]
+    case login
+        pws_login $argv[2..]
+    case stack
+        pws_stack $argv[2..]
+    case help --help -h
+        pws_usage
+    case '*'
+        pws_usage >&2
+        exit 1
+end
